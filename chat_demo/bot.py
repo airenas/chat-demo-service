@@ -17,6 +17,8 @@ class DemoBot:
         self.__send_status("thinking")
         # resend input to user
         self.__out_func(Data(in_type=DataType.TEXT, data=txt, who=Sender.USER))
+
+        self.__out_func(Data(in_type=DataType.TEXT, data=f"Gavau {txt}", who=Sender.BOT))
         # try:
         #     tree, ok = self.__cfg.parse(txt)
         #     if not ok:

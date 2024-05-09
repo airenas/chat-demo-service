@@ -6,6 +6,8 @@ import threading
 
 from chat_demo.api.data import Data, DataType, Sender
 from chat_demo.bot import DemoBot
+from chat_demo.inout.socket import SocketIO
+from chat_demo.inout.terminal import TerminalInput, TerminalOutput
 from chat_demo.logger import logger
 
 
@@ -112,17 +114,17 @@ def main(param):
         thread.start()
         workers.append(thread)
 
-    # terminal = TerminalInput(msg_func=in_func)
-    # threading.Thread(target=terminal.start, daemon=True).start()
-    # terminal_out = TerminalOutput()
-    # runner.add_output_processor(terminal_out.process)
+    terminal = TerminalInput(msg_func=in_func)
+    threading.Thread(target=terminal.start, daemon=True).start()
+    terminal_out = TerminalOutput()
+    runner.add_output_processor(terminal_out.process)
 
     # start_thread(rec.start)
 
-    # ws_service = SocketIO(msg_func=in_func, port=args.port)
-    # start_thread(ws_service.start)
-    #
-    # runner.add_output_processor(ws_service.process)
+    ws_service = SocketIO(msg_func=in_func, port=args.port)
+    start_thread(ws_service.start)
+
+    runner.add_output_processor(ws_service.process)
 
     # tts = IntelektikaTTS(url=args.tts_url, key=args.tts_key,
     #                      voice="laimis")
@@ -136,7 +138,7 @@ def main(param):
         nonlocal exit_c
         if exit_c == 0:
             # rec.stop()
-            # ws_service.stop()
+            ws_service.stop()
             runner.stop()
         else:
             exit(1)
