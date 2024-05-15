@@ -114,8 +114,8 @@ def main(param):
         thread.start()
         workers.append(thread)
 
-    terminal = TerminalInput(msg_func=in_func)
-    threading.Thread(target=terminal.start, daemon=True).start()
+    # terminal = TerminalInput(msg_func=in_func)
+    # threading.Thread(target=terminal.start, daemon=True).start()
     terminal_out = TerminalOutput()
     runner.add_output_processor(terminal_out.process)
 
