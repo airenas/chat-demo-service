@@ -1,4 +1,6 @@
 import threading
+import time
+import uuid
 
 from chat_demo.api.data import Data, DataType, Sender
 from chat_demo.logger import logger
@@ -14,11 +16,15 @@ class DemoBot:
 
     def process(self, txt: str):
         logger.debug("got %s " % txt)
-        self.__send_status("thinking")
-        # resend input to user
         self.__out_func(Data(in_type=DataType.TEXT, data=txt, who=Sender.USER))
+        self.__send_status("thinking")
+        time.sleep(2)
+        # resend input to user
+        id = str(uuid.uuid1())
 
-        self.__out_func(Data(in_type=DataType.TEXT, data=f"Gavau {txt}", who=Sender.BOT))
+        self.__out_func(Data(in_type=DataType.TEXT, data=f"Gavau {txt}", who=Sender.BOT, id=id))
+        time.sleep(1)
+        self.__out_func(Data(in_type=DataType.TEXT, data=f"Gavau {txt}. kas toliau?", who=Sender.BOT, id=id))
         # try:
         #     tree, ok = self.__cfg.parse(txt)
         #     if not ok:
