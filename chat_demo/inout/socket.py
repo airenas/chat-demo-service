@@ -19,9 +19,10 @@ class SocketIO:
         self.loop = None
 
     def start(self):
-        logger.info("Starting at %d" % self.__port)
+        path = 'ai-demo-service/ws/socket.io'
+        logger.info(f"Starting at {self.__port}, path={path}")
         app = web.Application()
-        self.sio.attach(app)
+        self.sio.attach(app, socketio_path=path)
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         server = self.loop.create_server(app.make_handler(), port=self.__port)
