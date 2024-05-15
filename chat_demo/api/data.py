@@ -40,9 +40,12 @@ class DataType(Enum):
 
 
 class Data:
-    def __init__(self, in_type: DataType, who: Sender = Sender.BOT, data: Any = None, data2: Any = None):
+    def __init__(self, in_type: DataType, who: Sender = Sender.BOT, data: Any = None, data2: Any = None, id: str = None):
         self.type = in_type
         self.data = data
         self.data2 = data2
         self.who = who
-        self.id = str(uuid.uuid1())
+        if id:
+            self.id = id
+        else:
+            self.id = str(uuid.uuid1())
