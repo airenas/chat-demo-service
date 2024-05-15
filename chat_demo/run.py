@@ -9,6 +9,7 @@ from chat_demo.bot import DemoBot
 from chat_demo.inout.socket import SocketIO
 from chat_demo.inout.terminal import TerminalInput, TerminalOutput
 from chat_demo.logger import logger
+from chat_demo.sessions import Sessions
 
 
 class Runner:
@@ -27,8 +28,10 @@ class Runner:
             inp = self.__input_queue.get()
             if inp is None:
                 break
-            if inp.type == DataType.TEXT:
-                self.__bot.process(inp.data)
+            if inp.type == DataType.TEXT and inp.who == Sender.REMOTE_BOT:
+                self.__bot.process_remote(inp)
+            elif inp.type == DataType.TEXT:
+                self.__bot.process(inp)
             elif inp.type == DataType.AUDIO:
                 logger.debug("got audio %d" % len(inp.data))
                 # self.__audio_rec.add(inp.data)
@@ -92,6 +95,7 @@ def main(param):
                         default='https://sinteze.intelektika.lt/synthesis.service/prod/synthesize',
                         help="URL of TTS service")
     parser.add_argument("--a2f_url", nargs='?', default='localhost:50051', help="URL of Audio2Face GRPC server")
+    parser.add_argument("--bot_url", nargs='?', required=True, help="Bot websocket URL")
     parser.add_argument("--a2f_name", nargs='?', default='SomeFace', help="Name of face instance for Audio2Face")
     parser.add_argument("--port", nargs='?', default=8007, help="Service port for socketio clients")
     parser.add_argument("--greet_on_connect", default=True, action=argparse.BooleanOptionalAction,
@@ -103,8 +107,12 @@ def main(param):
     def out_func(d: Data):
         runner.add_output(d)
 
+    def in_func(d: Data):
+        runner.add_input(d)
+
+    sessions = Sessions(out_func=in_func, url=args.bot_url)
     runner = Runner(
-        bot=DemoBot(out_func=out_func, greet_on_connect=args.greet_on_connect))
+        bot=DemoBot(out_func=out_func, greet_on_connect=args.greet_on_connect, sessions=sessions))
 
     def in_func(d: Data):
         runner.add_input(d)

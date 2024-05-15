@@ -1,3 +1,4 @@
+import threading
 import uuid
 from enum import Enum
 from typing import Any
@@ -7,6 +8,7 @@ class Sender(Enum):
     USER = 1
     BOT = 2
     RECOGNIZER = 3
+    REMOTE_BOT = 4
 
     def to_str(self):
         if self == Sender.USER:
@@ -40,11 +42,14 @@ class DataType(Enum):
 
 
 class Data:
-    def __init__(self, in_type: DataType, who: Sender = Sender.BOT, data: Any = None, data2: Any = None, id: str = None):
+    def __init__(self, in_type: DataType, who: Sender = Sender.BOT, data: Any = None, data2: Any = None, id: str = None,
+                 session_id: str = None):
         self.type = in_type
         self.data = data
         self.data2 = data2
         self.who = who
+        self.who = who
+        self.session_id = session_id
         if id:
             self.id = id
         else:

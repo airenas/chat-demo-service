@@ -1,3 +1,5 @@
+import uuid
+
 from chat_demo.api.data import Data, DataType, Sender
 from chat_demo.logger import logger
 
@@ -6,12 +8,13 @@ class TerminalInput:
     def __init__(self, msg_func):
         logger.info("Init terminal input")
         self.msg_func = msg_func
+        self.session_id = str(uuid.uuid1())
 
     def start(self):
         while True:
             # print("You: ", end="")
             txt = input()
-            self.msg_func(Data(in_type=DataType.TEXT, who=Sender.USER, data=txt))
+            self.msg_func(Data(in_type=DataType.TEXT, who=Sender.USER, data=txt, session_id=self.session_id))
 
 
 class TerminalOutput:
