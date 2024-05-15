@@ -96,6 +96,8 @@ def main(param):
     parser.add_argument("--port", nargs='?', default=8007, help="Service port for socketio clients")
     parser.add_argument("--greet_on_connect", default=True, action=argparse.BooleanOptionalAction,
                         help="do greet client on connecting")
+    parser.add_argument("--use_terminal_input", default=True, action=argparse.BooleanOptionalAction,
+                        help="use terminal input")
     args = parser.parse_args(args=param)
 
     def out_func(d: Data):
@@ -114,8 +116,10 @@ def main(param):
         thread.start()
         workers.append(thread)
 
-    # terminal = TerminalInput(msg_func=in_func)
-    # threading.Thread(target=terminal.start, daemon=True).start()
+    if args.use_terminal_input:
+        terminal = TerminalInput(msg_func=in_func)
+        threading.Thread(target=terminal.start, daemon=True).start()
+
     terminal_out = TerminalOutput()
     runner.add_output_processor(terminal_out.process)
 
