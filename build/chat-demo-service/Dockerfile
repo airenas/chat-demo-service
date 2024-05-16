@@ -26,6 +26,7 @@ LABEL org.opencontainers.image.version=$BUILD_VERSION \
       description="This image is used to run chat demo service"
 
 COPY ./chat_demo /app/chat_demo
+RUN echo "version = '$BUILD_VERSION'" > /app/chat_demo/version.py
 
 RUN chown app:app /app/* /app
 USER app

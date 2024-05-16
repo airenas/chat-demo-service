@@ -10,6 +10,7 @@ from chat_demo.inout.socket import SocketIO
 from chat_demo.inout.terminal import TerminalInput, TerminalOutput
 from chat_demo.logger import logger
 from chat_demo.sessions import Sessions
+from chat_demo.version import version
 
 
 class Runner:
@@ -171,5 +172,5 @@ def main(param):
 
 
 if __name__ == "__main__":
-    logger.info("Starting demo-bot")
+    logger.info(f"Starting demo-bot: {version}")
     main(sys.argv[1:])
