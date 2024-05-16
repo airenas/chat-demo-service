@@ -34,20 +34,28 @@ class BotConnection:
             logger.info(f'Received bot message: {data}')
             self.out_func(data)
 
-        self.sio.connect(self.url)
-        self.sio.emit('session_request',
-                      {"session_id": None})  # Replace with your event name and data
+        try:
+            self.sio.connect(self.url)
+            self.sio.emit('session_request',
+                          {"session_id": None})  # Replace with your event name and data
+        except Exception as e:
+            logger.error(f'Error connecting to bot: {e}')
+            return
 
         def wait():
             logger.info('started wait thread')
             self.sio.wait()
-            logger.info('exit wait thread')
+            logger.info('exit sio client wait thread')
 
         thread = threading.Thread(target=wait, daemon=True)
         thread.start()
+
+        start_time = time.time()
         while True:
             with self.lock:
                 if self.session_id is not None:
+                    break
+                if time.time() - start_time > 4:  # wait secs
                     break
             time.sleep(0.1)
         logger.info(f'bot ready: session_id: {self.session_id}')
@@ -55,4 +63,20 @@ class BotConnection:
     def send(self, txt):
         logger.info(f'send to bot: {txt}, {self.session_id}')
         with self.lock:
-            self.sio.emit('user_uttered', {'message': txt, 'session_id': self.session_id})
+            if self.session_id:
+                try:
+                    self.sio.emit('user_uttered', {'message': txt, 'session_id': self.session_id})
+                except Exception as e:
+                    logger.error(f'Error sending to bot: {e}')
+
+    def close(self):
+        logger.info(f'close {self.session_id}')
+        with self.lock:
+            try:
+                self.sio.disconnect()
+            except Exception as e:
+                logger.error(f'Error sending disconnect: {e}')
+
+    def connected(self):
+        with self.lock:
+            return self.session_id is not None

@@ -32,22 +32,24 @@ class SocketIO:
 
     async def message(self, sid, data):
         if data['type'] == "AUDIO":
-            self.msg_func(Data(in_type=DataType.AUDIO, who=Sender.USER, data=data['data']))
+            self.msg_func(Data(in_type=DataType.AUDIO, who=Sender.USER, data=data['data'], session_id=sid))
         elif data['type'] == "EVENT":
-            self.msg_func(Data(in_type=DataType.EVENT, who=Sender.USER, data=data['data']))
+            self.msg_func(Data(in_type=DataType.EVENT, who=Sender.USER, data=data['data'], session_id=sid))
         else:
             logger.info("message: %s, %s " % (sid, data))
-            self.msg_func(Data(in_type=DataType.TEXT, who=Sender.USER, data=data['data']))
+            self.msg_func(Data(in_type=DataType.TEXT, who=Sender.USER, data=data['data'], session_id=sid))
 
     def process(self, d: Data):
         asyncio.run_coroutine_threadsafe(self.send(d), self.loop)
 
     async def send(self, d: Data):
-        if d.type == DataType.TEXT or d.type == DataType.TEXT_RESULT or d.type == DataType.STATUS:
+        if d.who == Sender.REMOTE_BOT:
+            pass
+        elif d.type == DataType.TEXT or d.type == DataType.TEXT_RESULT or d.type == DataType.STATUS:
             logger.info("sending msg %s" % d.type)
-            await self.sio.emit('message',
-                                {"type": d.type.to_str(), "data": str(d.data), "data2": str(d.data2),
-                                 "who": d.who.to_str(), "id": d.id})
+            await self.sio.emit(event='message', to=d.session_id,
+                                data={"type": d.type.to_str(), "data": str(d.data), "data2": str(d.data2),
+                                      "who": d.who.to_str(), "id": d.id, "session_id": d.session_id})
         elif d.who == Sender.RECOGNIZER:
             pass
         else:
@@ -55,10 +57,11 @@ class SocketIO:
 
     async def connect(self, sid, environ):
         logger.info("connect: %s " % sid)
-        self.msg_func(Data(in_type=DataType.EVENT, who=Sender.USER, data="connected"))
+        self.msg_func(Data(in_type=DataType.EVENT, who=Sender.USER, data="connected", session_id=str(sid)))
 
     async def disconnect(self, sid):
         logger.info("disconnect: %s " % sid)
+        self.msg_func(Data(in_type=DataType.EVENT, who=Sender.USER, data="disconnected", session_id=str(sid)))
 
     def stop(self):
         logger.debug("stopping socket listener loop")

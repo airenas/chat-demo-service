@@ -13,9 +13,10 @@ from chat_demo.sessions import Sessions
 
 
 class Runner:
-    def __init__(self, bot):
+    def __init__(self, bot, sessions=None):
         logger.info("Init runner")
         self.__bot = bot
+        self.__sessions = sessions
         self.__outputs = []
         self.__input_queue: queue.Queue[Data] = queue.Queue(maxsize=500)
         self.__output_queue: queue.Queue[Data] = queue.Queue(maxsize=500)
@@ -30,6 +31,10 @@ class Runner:
                 break
             if inp.type == DataType.TEXT and inp.who == Sender.REMOTE_BOT:
                 self.__bot.process_remote(inp)
+            elif inp.type == DataType.EVENT and inp.who == Sender.REMOTE_BOT:
+                self.__bot.process_event(inp)
+            elif inp.type == DataType.EVENT and inp.who == Sender.USER and inp.data == "disconnected":
+                self.__sessions.drop(inp.session_id)
             elif inp.type == DataType.TEXT:
                 self.__bot.process(inp)
             elif inp.type == DataType.AUDIO:
@@ -112,7 +117,7 @@ def main(param):
 
     sessions = Sessions(out_func=in_func, url=args.bot_url)
     runner = Runner(
-        bot=DemoBot(out_func=out_func, greet_on_connect=args.greet_on_connect, sessions=sessions))
+        bot=DemoBot(out_func=out_func, greet_on_connect=args.greet_on_connect, sessions=sessions), sessions=sessions)
 
     def in_func(d: Data):
         runner.add_input(d)
