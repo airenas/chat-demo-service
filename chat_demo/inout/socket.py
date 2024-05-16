@@ -32,12 +32,15 @@ class SocketIO:
 
     async def message(self, sid, data):
         if data['type'] == "AUDIO":
-            self.msg_func(Data(in_type=DataType.AUDIO, who=Sender.USER, data=data['data'], session_id=sid))
+            self.msg_func(
+                Data(in_type=DataType.AUDIO, who=Sender.USER, data=data['data'], session_id=sid, id=data.get('id')))
         elif data['type'] == "EVENT":
-            self.msg_func(Data(in_type=DataType.EVENT, who=Sender.USER, data=data['data'], session_id=sid))
+            self.msg_func(
+                Data(in_type=DataType.EVENT, who=Sender.USER, data=data['data'], session_id=sid, id=data.get('id')))
         else:
             logger.info("message: %s, %s " % (sid, data))
-            self.msg_func(Data(in_type=DataType.TEXT, who=Sender.USER, data=data['data'], session_id=sid))
+            self.msg_func(
+                Data(in_type=DataType.TEXT, who=Sender.USER, data=data['data'], session_id=sid, id=data.get('id')))
 
     def process(self, d: Data):
         asyncio.run_coroutine_threadsafe(self.send(d), self.loop)

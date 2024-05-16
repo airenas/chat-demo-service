@@ -18,7 +18,8 @@ class DemoBot:
         txt = data.data
         logger.debug(f"got: {txt}, session: {data.session_id}")
         session = self.__sessions.get(data.session_id)
-        self.__out_func(Data(in_type=DataType.TEXT, data=txt, who=Sender.USER, session_id=session.session_id))
+        self.__out_func(
+            Data(in_type=DataType.TEXT, data=txt, who=Sender.USER, session_id=session.session_id, id=data.id))
         self.__send_status("thinking", session_id=session.session_id)
         session.get_bot_connection().send(txt)
         self.__out_func(Data(in_type=DataType.TEXT, data=f"Gavau {txt}", who=Sender.BOT, id=id))
