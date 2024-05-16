@@ -42,23 +42,8 @@ class BotConnection:
             logger.error(f'Error connecting to bot: {e}')
             return
 
-        def wait():
-            logger.info('started wait thread')
-            self.sio.wait()
-            logger.info('exit sio client wait thread')
-
-        thread = threading.Thread(target=wait, daemon=True)
-        thread.start()
-
-        start_time = time.time()
-        while True:
-            with self.lock:
-                if self.session_id is not None:
-                    break
-                if time.time() - start_time > 4:  # wait secs
-                    break
-            time.sleep(0.1)
-        logger.info(f'bot ready: session_id: {self.session_id}')
+        self.start()
+        self.wait_for_session()
 
     def send(self, txt):
         logger.info(f'send to bot: {txt}, {self.session_id}')
@@ -80,3 +65,24 @@ class BotConnection:
     def connected(self):
         with self.lock:
             return self.session_id is not None
+
+    def start(self):
+        def wait():
+            logger.info('started wait thread')
+            self.sio.wait()
+            logger.info('exit sio client wait thread')
+
+        thread = threading.Thread(target=wait, daemon=True)
+        thread.start()
+
+    def wait_for_session(self):
+        start_time = time.time()
+        while True:
+            with self.lock:
+                if self.session_id is not None:
+                    logger.info(f'bot ready: session_id: {self.session_id}')
+                    break
+                if time.time() - start_time > 4:  # wait secs
+                    logger.error('bot timeout waiting for session')
+                    break
+            time.sleep(0.1)
