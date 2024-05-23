@@ -7,10 +7,13 @@ import threading
 from chat_demo.api.data import Data, DataType, Sender
 from chat_demo.asr.kaldi import Kaldi
 from chat_demo.bot import DemoBot
+from chat_demo.inout.audio_endpoint import AudioEndpoint
 from chat_demo.inout.socket import SocketIO
 from chat_demo.inout.terminal import TerminalInput, TerminalOutput
+from chat_demo.inout.web import WebService
 from chat_demo.logger import logger
 from chat_demo.sessions import Sessions
+from chat_demo.tts.intelektika import IntelektikaTTS
 from chat_demo.version import version
 
 
@@ -146,16 +149,15 @@ def main(param):
 
     start_thread(rec.start)
 
-    ws_service = SocketIO(msg_func=in_func, port=args.port)
-    start_thread(ws_service.start)
+    ws = WebService(port=args.port)
+    ws_service = SocketIO(msg_func=in_func, ws=ws)
+    start_thread(ws.start)
 
     runner.add_output_processor(ws_service.process)
 
-    # tts = IntelektikaTTS(url=args.tts_url, key=args.tts_key,
-    #                      voice="laimis")
-
-    # voice_out = VoiceOutput(tts=tts, player=player)
-    # runner.add_output_processor(voice_out.process)
+    tts = IntelektikaTTS(url=args.tts_url, key=args.tts_key,
+                         voice="laimis")
+    _ = AudioEndpoint(tts=tts, ws=ws)
 
     exit_c = 0
 
@@ -163,7 +165,7 @@ def main(param):
         nonlocal exit_c
         if exit_c == 0:
             rec.stop()
-            ws_service.stop()
+            ws.stop()
             runner.stop()
         else:
             exit(1)
