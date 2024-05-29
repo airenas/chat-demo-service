@@ -53,7 +53,7 @@ class WsClient:
                 logger.error("Error message:", response['message'])
 
     def on_error(self, ws, err):
-        logger.error("Kaldi ws conn error:", err)
+        logger.error(f"Kaldi ws conn error: {err}")
         self.__event_method("failed")
         self.failed = True
 
