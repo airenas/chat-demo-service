@@ -6,6 +6,13 @@ from chat_demo.inout.bot_connection import BotConnection
 from chat_demo.logger import logger
 
 
+class Message:
+    def __init__(self, text: str):
+        self.lock = threading.Lock()
+        self.text = text
+        self.audio = None
+
+
 class ChatSession:
     def __init__(self, session_id: str = None, out_func=None, url: str = None):
         self.session_id = session_id
@@ -13,6 +20,7 @@ class ChatSession:
         self.lock = threading.Lock()
         self.out_func = out_func
         self.url = url
+        self.__messages = {}
 
     def get_bot_connection(self) -> BotConnection:
         with self.lock:
@@ -23,6 +31,15 @@ class ChatSession:
                     Data(session_id=self.session_id, who=Sender.REMOTE_BOT, data="failure",
                          in_type=DataType.EVENT))
             return self.bot_connection
+
+    def set_msg(self, msg: Data):
+        with self.lock:
+            logger.info(f"add msg to cache {msg.id}")
+            self.__messages[msg.id] = Message(text=msg.data)
+
+    def get_msg(self, msg_id) -> Message:
+        with self.lock:
+            return self.__messages.get(msg_id)
 
     def drop(self):
         with self.lock:

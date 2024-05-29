@@ -157,7 +157,7 @@ def main(param):
 
     tts = IntelektikaTTS(url=args.tts_url, key=args.tts_key,
                          voice="laimis")
-    _ = AudioEndpoint(tts=tts, ws=ws)
+    _ = AudioEndpoint(tts=tts, ws=ws, sessions=sessions)
 
     exit_c = 0
 
