@@ -14,7 +14,7 @@ class IntelektikaTTS:
 
     def convert(self, txt: str) -> bytes:
         in_data = {'text': txt, "voice": self.__voice}
-        x = requests.post(self.__url, json=in_data, headers={"Authorization": "Key " + self.__key}, timeout=15)
+        x = requests.post(self.__url, json=in_data, headers={"Authorization": "Key " + self.__key}, timeout=30)
         if x.status_code != 200:
             raise Exception("Can't synthesize: " + x.text)
         data = x.json()

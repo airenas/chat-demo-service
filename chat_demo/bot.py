@@ -40,7 +40,7 @@ class DemoBot:
                     self.__send_status("rec_listen", session_id=inp.session_id)
                 elif inp.data == "failed":
                     self.__send_status("rec_failed", session_id=inp.session_id)
-                    self.__schedule_status_restore()
+                    self.__schedule_status_restore(inp.session_id)
                 elif inp.data == "stopped":
                     self.__send_status("waiting", session_id=inp.session_id)
 
@@ -59,9 +59,9 @@ class DemoBot:
         self.__stop_timer()
         self.__out_func(Data(in_type=DataType.STATUS, data=status, session_id=session_id))
 
-    def __schedule_status_restore(self):
+    def __schedule_status_restore(self, session_id):
         def after():
-            self.__send_status("waiting")
+            self.__send_status("waiting", session_id=session_id)
 
         self.__stop_timer()
         with self.__timer_lock:

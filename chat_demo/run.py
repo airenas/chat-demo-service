@@ -5,27 +5,25 @@ import sys
 import threading
 
 from chat_demo.api.data import Data, DataType, Sender
-from chat_demo.asr.kaldi import Kaldi
 from chat_demo.bot import DemoBot
 from chat_demo.inout.audio_endpoint import AudioEndpoint
 from chat_demo.inout.socket import SocketIO
 from chat_demo.inout.terminal import TerminalInput, TerminalOutput
 from chat_demo.inout.web import WebService
 from chat_demo.logger import logger
-from chat_demo.sessions import Sessions
+from chat_demo.sessions import Sessions, ChatSession
 from chat_demo.tts.intelektika import IntelektikaTTS
 from chat_demo.version import version
 
 
 class Runner:
-    def __init__(self, bot, sessions=None, audio_rec=None):
+    def __init__(self, bot, sessions=None):
         logger.info("Init runner")
         self.__bot = bot
         self.__sessions = sessions
         self.__outputs = []
         self.__input_queue: queue.Queue[Data] = queue.Queue(maxsize=500)
         self.__output_queue: queue.Queue[Data] = queue.Queue(maxsize=500)
-        self.__audio_rec = audio_rec
 
     def start(self):
         self.add_output_processor(self.resend_recognized)
@@ -35,6 +33,7 @@ class Runner:
             inp = self.__input_queue.get()
             if inp is None:
                 break
+            logger.info(f"input {inp}")
             if inp.type == DataType.TEXT and inp.who == Sender.REMOTE_BOT:
                 self.__bot.process_remote(inp)
             elif inp.type == DataType.EVENT and inp.who == Sender.REMOTE_BOT:
@@ -45,12 +44,14 @@ class Runner:
                 self.__bot.process(inp)
             elif inp.type == DataType.AUDIO and inp.who == Sender.USER:
                 logger.debug("got audio %d" % len(inp.data))
-                self.__audio_rec.add(inp.data)
+                chat = self.__sessions.get(inp.session_id)
+                chat.process_msg(inp)
             elif inp.type == DataType.EVENT:
                 logger.debug("got event %s" % inp.data)
                 self.__bot.process_event(inp)
                 if inp.who == Sender.USER and (inp.data == "AUDIO_START" or inp.data == "AUDIO_STOP"):
-                    self.__audio_rec.event(inp.data)
+                    chat = self.__sessions.get(inp.session_id)
+                    chat.process_msg(inp)
             else:
                 logger.warning("Don't know what to do with %s - %s" % (inp.type, inp.data))
         th_out.join()
@@ -61,6 +62,7 @@ class Runner:
             inp = self.__output_queue.get()
             if inp is None:
                 break
+            logger.info(f"output {inp}")
             for out_proc in self.__outputs:
                 out_proc(inp)
 
@@ -80,10 +82,10 @@ class Runner:
     def resend_recognized(self, d: Data):
         if d.type == DataType.TEXT_RESULT and d.who == Sender.RECOGNIZER:
             logger.debug("resend recognized text as user input")
-            self.add_input(Data(in_type=DataType.TEXT, who=Sender.USER, data=d.data))
+            self.add_input(Data(in_type=DataType.TEXT, who=Sender.USER, data=d.data, session_id=d.session_id))
         if d.type == DataType.EVENT and d.who == Sender.RECOGNIZER:
             logger.debug("resend recognizer events")
-            self.add_input(Data(in_type=DataType.EVENT, who=Sender.RECOGNIZER, data=d.data))
+            self.add_input(Data(in_type=DataType.EVENT, who=Sender.RECOGNIZER, data=d.data, session_id=d.session_id))
 
 
 def main(param):
@@ -122,16 +124,15 @@ def main(param):
     def in_func(d: Data):
         runner.add_input(d)
 
-    rec = Kaldi(url=args.kaldi_url, msg_func=out_func)
-    # rec = AudioSaver()
+    # rec = Kaldi(url=args.kaldi_url, msg_func=out_func)
 
-    sessions = Sessions(out_func=in_func, url=args.bot_url)
+    def session_factory(session_id: str):
+        logger.info(f"Create session {session_id}")
+        return ChatSession(session_id=session_id, out_func=out_func, in_func=in_func, bot_url=args.bot_url, kaldi_url=args.kaldi_url)
+
+    sessions = Sessions(session_factory=session_factory)
     runner = Runner(
-        bot=DemoBot(out_func=out_func, greet_on_connect=args.greet_on_connect, sessions=sessions), sessions=sessions,
-        audio_rec=rec)
-
-    def in_func(d: Data):
-        runner.add_input(d)
+        bot=DemoBot(out_func=out_func, greet_on_connect=args.greet_on_connect, sessions=sessions), sessions=sessions)
 
     workers = []
 
@@ -147,7 +148,7 @@ def main(param):
     terminal_out = TerminalOutput()
     runner.add_output_processor(terminal_out.process)
 
-    start_thread(rec.start)
+    # start_thread(rec.start)
 
     ws = WebService(port=args.port)
     ws_service = SocketIO(msg_func=in_func, ws=ws)
@@ -164,7 +165,7 @@ def main(param):
     def stop_runner(signum, frame):
         nonlocal exit_c
         if exit_c == 0:
-            rec.stop()
+            # rec.stop()
             ws.stop()
             runner.stop()
         else:
