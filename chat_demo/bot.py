@@ -18,10 +18,12 @@ class DemoBot:
         txt = data.data
         logger.debug(f"got: {txt}, session: {data.session_id}")
         session = self.__sessions.get(data.session_id)
+        session.detect_lang(txt)
         self.__out_func(
-            Data(in_type=DataType.TEXT, data=txt, who=Sender.USER, session_id=session.session_id, id=data.id))
+            Data(in_type=DataType.TEXT, data=txt, who=Sender.USER, session_id=session.session_id, id=data.id,
+                 lang=session.get_lang().to_str()))
         self.__send_status("thinking", session_id=session.session_id)
-        session.get_bot_connection().send(txt)
+        session.bot_send(txt)
         self.__send_status("waiting", session_id=session.session_id)
 
     def process_event(self, inp: Data):
@@ -46,7 +48,7 @@ class DemoBot:
 
     def process_remote(self, inp: Data):
         logger.debug("bot got response %s" % inp.data)
-        msg = Data(in_type=DataType.TEXT, data=inp.data, who=Sender.BOT, session_id=inp.session_id)
+        msg = Data(in_type=DataType.TEXT, data=inp.data, who=Sender.BOT, session_id=inp.session_id, lang=inp.lang)
         session = self.__sessions.get(inp.session_id)
         session.set_msg(msg)
         self.__out_func(msg)

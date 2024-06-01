@@ -10,6 +10,7 @@ from chat_demo.inout.audio_endpoint import AudioEndpoint
 from chat_demo.inout.socket import SocketIO
 from chat_demo.inout.terminal import TerminalInput, TerminalOutput
 from chat_demo.inout.web import WebService
+from chat_demo.langs.translator import Translator
 from chat_demo.logger import logger
 from chat_demo.sessions import Sessions, ChatSession
 from chat_demo.tts.intelektika import IntelektikaTTS
@@ -124,11 +125,15 @@ def main(param):
     def in_func(d: Data):
         runner.add_input(d)
 
+    translator = Translator()
+
     # rec = Kaldi(url=args.kaldi_url, msg_func=out_func)
 
     def session_factory(session_id: str):
         logger.info(f"Create session {session_id}")
-        return ChatSession(session_id=session_id, out_func=out_func, in_func=in_func, bot_url=args.bot_url, kaldi_url=args.kaldi_url)
+        return ChatSession(session_id=session_id, out_func=out_func, in_func=in_func, bot_url=args.bot_url,
+                           kaldi_url=args.kaldi_url,
+                           translator=translator)
 
     sessions = Sessions(session_factory=session_factory)
     runner = Runner(

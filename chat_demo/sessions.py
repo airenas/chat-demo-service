@@ -1,9 +1,11 @@
 import threading
 from typing import Dict
 
-from chat_demo.api.data import Data, Sender, DataType
+from chat_demo.api.data import Data, Sender, DataType, Langs
 from chat_demo.asr.kaldi import Kaldi
 from chat_demo.inout.bot_connection import BotConnection
+from chat_demo.langs.languages import LangsDetector
+from chat_demo.langs.translator import Translator
 from chat_demo.logger import logger
 
 
@@ -16,7 +18,7 @@ class Message:
 
 class ChatSession:
     def __init__(self, session_id: str = None, out_func=None, in_func=None, bot_url: str = None,
-                 kaldi_url: str = None):
+                 kaldi_url: str = None, translator: Translator = None):
         self.session_id = session_id
         self.__bot_connection: BotConnection = None
         self.__kaldi: Kaldi = None
@@ -27,6 +29,9 @@ class ChatSession:
         self.__in_func = in_func
         self.__bot_url = bot_url
         self.__messages = {}
+        self.__lang = Langs.LT
+        self.__lang_detector = LangsDetector()
+        self.__translator = translator
 
     def get_bot_connection(self) -> BotConnection:
         with self.__lock:
@@ -46,6 +51,12 @@ class ChatSession:
                 self.__kaldi_thread.start()
 
             return self.__kaldi
+
+    def bot_send(self, txt):
+        f_txt = txt.strip()
+        if self.__lang != Langs.LT:
+            f_txt = self.__translator.convert(txt, self.__lang, Langs.LT)
+        self.get_bot_connection().send(f_txt)
 
     def set_msg(self, msg: Data):
         with self.__lock:
@@ -77,13 +88,27 @@ class ChatSession:
 
     def __out_func(self, data):
         logger.info(f"out_func {data}")
+        f_txt = data.get('text')
+        if self.__lang != Langs.LT:
+            f_txt = self.__translator.convert(f_txt, Langs.LT, self.__lang)
+
         self.__in_func(
-            Data(session_id=self.session_id, who=Sender.REMOTE_BOT, data=data.get('text'), in_type=DataType.TEXT))
+            Data(session_id=self.session_id, who=Sender.REMOTE_BOT, data=f_txt, in_type=DataType.TEXT,
+                 lang=self.__lang.to_str()))
 
     def __recognizer_func(self, data):
         logger.info(f"recognizer_func {data}")
         data.session_id = self.session_id
         self.__out_remote_func(data)
+
+    def detect_lang(self, txt):
+        lang = self.__lang_detector.detect(txt)
+        if lang != Langs.UN:
+            self.__lang = lang
+        logger.info(f"detected lang {lang}, value {self.__lang}")
+
+    def get_lang(self):
+        return self.__lang
 
 
 class Sessions:

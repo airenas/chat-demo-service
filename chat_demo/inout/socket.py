@@ -40,7 +40,7 @@ class SocketIO:
             logger.info("sending msg %s" % d.type)
             await self.sio.emit(event='message', to=d.session_id,
                                 data={"type": d.type.to_str(), "data": str(d.data), "data2": str(d.data2),
-                                      "who": d.who.to_str(), "id": d.id, "session_id": d.session_id})
+                                      "who": d.who.to_str(), "id": d.id, "session_id": d.session_id, "lang": d.lang})
         elif d.who == Sender.RECOGNIZER:
             pass
         else:
