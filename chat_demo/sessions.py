@@ -55,7 +55,10 @@ class ChatSession:
     def bot_send(self, txt):
         f_txt = txt.strip()
         if self.__lang != Langs.LT:
-            f_txt = self.__translator.convert(txt, self.__lang, Langs.LT)
+            try:
+                f_txt = self.__translator.convert(txt, self.__lang, Langs.LT)
+            except Exception as e:
+                logger.error(f"Can't translate to {Langs.LT.to_str()}: {e}")
         self.get_bot_connection().send(f_txt)
 
     def set_msg(self, msg: Data):
@@ -90,7 +93,10 @@ class ChatSession:
         logger.info(f"out_func {data}")
         f_txt = data.get('text')
         if self.__lang != Langs.LT:
-            f_txt = self.__translator.convert(f_txt, Langs.LT, self.__lang)
+            try:
+                f_txt = self.__translator.convert(f_txt, Langs.LT, self.__lang)
+            except Exception as e:
+                logger.error(f"Can't translate to {self.__lang.to_str()}: {e}")
 
         self.__in_func(
             Data(session_id=self.session_id, who=Sender.REMOTE_BOT, data=f_txt, in_type=DataType.TEXT,

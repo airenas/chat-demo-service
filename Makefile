@@ -12,7 +12,8 @@ run:
 	LOG_LEVEL=debug python -m chat_demo.run --tts_key $(tts-key) \
 	    --tts_url=$(tts-url) \
 	    --kaldi_url=$(kaldi-url) $(greetOnConnect) --use_terminal_input \
-	    --bot_url=$(bot-url)
+	    --bot_url=$(bot-url) \
+	    --translate_key=$(translate-key) \
 
 run/kaldi:
 	docker run -it -p 9090:80 --restart unless-stopped intelektikalt/docker-kaldi-calc:0.1.1

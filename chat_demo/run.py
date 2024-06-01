@@ -117,6 +117,7 @@ def main(param):
                         help="do greet client on connecting")
     parser.add_argument("--use_terminal_input", default=True, action=argparse.BooleanOptionalAction,
                         help="use terminal input")
+    parser.add_argument("--translate_key", nargs='?', default='translate-key', help="VDU translate engine key")
     args = parser.parse_args(args=param)
 
     def out_func(d: Data):
@@ -125,9 +126,7 @@ def main(param):
     def in_func(d: Data):
         runner.add_input(d)
 
-    translator = Translator()
-
-    # rec = Kaldi(url=args.kaldi_url, msg_func=out_func)
+    translator = Translator(key=args.translate_key)
 
     def session_factory(session_id: str):
         logger.info(f"Create session {session_id}")
@@ -153,8 +152,6 @@ def main(param):
     terminal_out = TerminalOutput()
     runner.add_output_processor(terminal_out.process)
 
-    # start_thread(rec.start)
-
     ws = WebService(port=args.port)
     ws_service = SocketIO(msg_func=in_func, ws=ws)
     start_thread(ws.start)
@@ -170,7 +167,6 @@ def main(param):
     def stop_runner(signum, frame):
         nonlocal exit_c
         if exit_c == 0:
-            # rec.stop()
             ws.stop()
             runner.stop()
         else:
