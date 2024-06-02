@@ -8,8 +8,8 @@ def prepare_key_map():
     # curl -X GET "https://vertimas.vu.lt/ws/service.svc/json/GetSystemList?appID=myappid" -H "client-id: " | jq .
     return {"lt-en": "smt-8abc06a7-09dc-405c-bd29-580edc74eb05",
             "en-lt": "smt-ecbadf49-1c17-470f-a6d9-b06a54b4e46f",
-            "lt-po": "smt-ed8e89ff-982a-4214-ad79-a1e03be0c738",
-            "po-lt": "smt-6c8db4f4-18fc-4cac-8fba-ce47bc2de495",
+            "lt-pl": "smt-ed8e89ff-982a-4214-ad79-a1e03be0c738",
+            "pl-lt": "smt-6c8db4f4-18fc-4cac-8fba-ce47bc2de495",
             "lt-ru": "smt-5867533f-6573-4672-b742-28b6ac9afda0",
             "ru-lt": "smt-51dfc27c-77ef-4edd-b76d-0df6163759c6",
             "lt-de": "smt-ec6db1bc-ba3a-4f17-86c2-920b91ecd33c",
