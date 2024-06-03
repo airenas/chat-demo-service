@@ -29,6 +29,7 @@ class ChatSession:
         self.__in_func = in_func
         self.__bot_url = bot_url
         self.__messages = {}
+        self.__all_messages = []
         self.__lang = Langs.LT
         self.__lang_detector = LangsDetector()
         self.__translator = translator
@@ -65,6 +66,7 @@ class ChatSession:
         with self.__lock:
             logger.info(f"add msg to cache {msg.id}")
             self.__messages[msg.id] = Message(text=msg.data)
+            self.__all_messages.append(msg)
 
     def get_msg(self, msg_id) -> Message:
         with self.__lock:
@@ -108,13 +110,28 @@ class ChatSession:
         self.__out_remote_func(data)
 
     def detect_lang(self, txt):
-        lang = self.__lang_detector.detect(txt)
+        txt_detect = self.make_detect_text(txt)
+        logger.debug(f"detect txt: {txt_detect}")
+        lang = self.__lang_detector.detect(txt_detect)
         if lang != Langs.UN:
             self.__lang = lang
         logger.info(f"detected lang {lang}, value {self.__lang}")
 
     def get_lang(self):
         return self.__lang
+
+    def make_detect_text(self, txt):
+        min_text = 100
+        if len(txt) > min_text:
+            return txt
+        res = txt
+        with self.__lock:
+            for msg in reversed(self.__all_messages):
+                if msg.who == Sender.USER and msg.type == DataType.TEXT:
+                    res = msg.data + " " + res
+                    if len(res) > min_text:
+                        break
+        return res
 
 
 class Sessions:

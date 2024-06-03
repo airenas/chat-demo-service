@@ -24,6 +24,7 @@ class DemoBot:
                  lang=session.get_lang().to_str()))
         self.__send_status("thinking", session_id=session.session_id)
         session.bot_send(txt)
+        session.set_msg(data)
         self.__send_status("waiting", session_id=session.session_id)
 
     def process_event(self, inp: Data):
