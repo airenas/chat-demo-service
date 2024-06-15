@@ -20,8 +20,8 @@ class ChatSession:
     def __init__(self, session_id: str = None, out_func=None, in_func=None, bot_url: str = None,
                  kaldi_url: str = None, translator: Translator = None):
         self.session_id = session_id
-        self.__bot_connection: BotConnection = None
-        self.__kaldi: Kaldi = None
+        self.__bot_connection: BotConnection | None = None
+        self.__kaldi: Kaldi | None = None
         self.__kaldi_url = kaldi_url
         self.__kaldi_thread = None
         self.__lock = threading.Lock()
@@ -81,18 +81,22 @@ class ChatSession:
             self.__get_recognizer().event(inp.data)
 
     def drop(self):
+        logger.info(f"drop session {self.session_id}")
         with self.__lock:
-            if self.__bot_connection:
-                self.__bot_connection.close()
-            self.__bot_connection = None
-            if self.__kaldi:
-                self.__kaldi.stop()
-            self.__kaldi = None
-            if self.__kaldi_thread:
-                self.__kaldi_thread.join()
+            try:
+                if self.__bot_connection:
+                    self.__bot_connection.close()
+                self.__bot_connection = None
+                if self.__kaldi:
+                    self.__kaldi.stop()
+                self.__kaldi = None
+                if self.__kaldi_thread:
+                    self.__kaldi_thread.join()
+            except Exception as e:
+                logger.error(f"Can't drop session {self.session_id}: {e}")
 
     def __out_func(self, data):
-        logger.info(f"out_func {data}")
+        logger.info(f"out_func {data.type}, {data.id}, {data.session_id}")
         f_txt = data.get('text')
         if self.__lang != Langs.LT:
             try:
@@ -105,7 +109,7 @@ class ChatSession:
                  lang=self.__lang.to_str()))
 
     def __recognizer_func(self, data):
-        logger.info(f"recognizer_func {data}")
+        logger.info(f"recognizer_func {data.type}, {data.id}, {data.session_id}")
         data.session_id = self.session_id
         self.__out_remote_func(data)
 
@@ -144,14 +148,18 @@ class Sessions:
         with self._lock:
             if session in self.__sessions:
                 return self.__sessions[session]
-            logger.info(f"create session {session}")
             res = self.__session_factory(session)
             self.__sessions[session] = res
+            logger.info(f"create session {session} ({len(self.__sessions)})")
             return res
 
-    def drop(self, session: str):
+    def drop(self, session_str: str):
         with self._lock:
-            session: ChatSession = self.__sessions.get(session)
-            if session in self.__sessions:
+            logger.info(f"drop session {session_str}")
+            session: ChatSession = self.__sessions.get(session_str)
+            if session:
                 session.drop()
-                del self.__sessions[session]
+                del self.__sessions[session_str]
+                logger.info(f"dropped session {session_str} ({len(self.__sessions)})")
+            else:
+                logger.warning(f"no session {session_str}")
