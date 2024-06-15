@@ -58,6 +58,7 @@ class BotConnection:
         logger.info(f'close {self.session_id}')
         with self.lock:
             try:
+                logger.info(f'call disconnect')
                 self.sio.disconnect()
             except Exception as e:
                 logger.error(f'Error sending disconnect: {e}')

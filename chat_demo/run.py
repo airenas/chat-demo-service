@@ -34,7 +34,7 @@ class Runner:
             inp = self.__input_queue.get()
             if inp is None:
                 break
-            logger.info(f"input {inp}")
+            logger.info(f"input {inp.type}, {inp.id}, {inp.session_id}")
             if inp.type == DataType.TEXT and inp.who == Sender.REMOTE_BOT:
                 self.__bot.process_remote(inp)
             elif inp.type == DataType.EVENT and inp.who == Sender.REMOTE_BOT:
@@ -63,7 +63,7 @@ class Runner:
             inp = self.__output_queue.get()
             if inp is None:
                 break
-            logger.info(f"output {inp}")
+            logger.info(f"output {inp.type}, {inp.id}, {inp.session_id}")
             for out_proc in self.__outputs:
                 out_proc(inp)
 
