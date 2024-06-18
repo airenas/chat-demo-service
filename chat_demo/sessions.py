@@ -96,8 +96,8 @@ class ChatSession:
                 logger.error(f"Can't drop session {self.session_id}: {e}")
 
     def __out_func(self, data):
-        logger.info(f"out_func {data.type}, {data.id}, {data.session_id}")
         f_txt = data.get('text')
+        logger.debug(f"out_func {f_txt}")
         if self.__lang != Langs.LT:
             try:
                 f_txt = self.__translator.convert(f_txt, Langs.LT, self.__lang)
