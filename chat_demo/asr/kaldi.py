@@ -1,12 +1,20 @@
 import json
 import queue
 import threading
+from typing import List
 from urllib.parse import urlencode
 
 import websocket as websocket
 
 from chat_demo.api.data import Data, DataType, Sender
 from chat_demo.logger import logger
+
+
+class SpeechSegment:
+    def __init__(self, segment: int = 0, text: str = "", final: bool = True):
+        self.segment = segment
+        self.text = text
+        self.final = final
 
 
 class WsClient:
@@ -21,7 +29,7 @@ class WsClient:
         self.__audio_queue: queue.Queue[bytes] = queue.Queue(maxsize=500)
         self.__text_method = text_method
         self.__event_method = event_method
-        self.hyps = []
+        self.hyps: List[SpeechSegment] = []
         self.failed = False
 
         def start_conn():
@@ -37,10 +45,13 @@ class WsClient:
             msg = msg[:200]
         logger.debug("got from kaldi message: %s " % msg)
         if response['status'] == 0:
+            old_updates = response.get("old-updates")
+            if old_updates and len(old_updates) > 0:
+                self.__update_hyps(old_updates)
             if 'result' in response and response['result'].get('hypotheses'):
                 trans = response['result']['hypotheses'][0]['transcript']
                 if response['result']['final']:
-                    self.hyps.append(trans)
+                    self.hyps.append(SpeechSegment(segment=response.get("segment", 0), text=trans, final=True))
                 else:
                     txt = self.get_text(trans)
                     if txt:
@@ -93,8 +104,25 @@ class WsClient:
         self.__audio_queue.put(data)
 
     def get_text(self, trans):
-        res = " ".join(self.hyps).strip() + " " + trans
+        str = []
+        for hyp in self.hyps:
+            if hyp.final:
+                str.append(hyp.text)
+        res = " ".join(str).strip() + " " + trans
         return res.strip()
+
+    def __update_hyps(self, old_updates):
+        for update in old_updates:
+            found = False
+            for hyp in self.hyps:
+                if hyp.segment == update.get("segment"):
+                    logger.debug(f"update hyp {hyp.segment}")
+                    hyp.final = update.get("final", True)
+                    hyp.text = update.get("transcript", "")
+                    found = True
+                    break
+            if not found:
+                logger.warning(f"update hyp failed, no segment {update.get('segment')}")
 
 
 def get_url(url):
