@@ -20,7 +20,7 @@
 
 #### OS
 
-Linux OS 64-bit (papildomai žiūrėkite [reikalavimus Docker instaliacijai](https://docs.docker.com/engine/install/)). Reckomenduojama `Debian Bookworm 12 (stable)`. 
+Linux OS 64-bit (papildomai žiūrėkite [reikalavimus Docker instaliacijai](https://docs.docker.com/engine/install/)). Rekomenduojama `Debian Bookworm 12 (stable)`. 
 
 
 #### Kiti
