@@ -1,4 +1,4 @@
-# Diegimas vienoje mašinoje naudojant *Docker*
+# Diegimas naudojant *Docker*
 
 ## Apie
 
@@ -35,7 +35,7 @@ Papildomi įrankiai naudojami instaliuojant: [make](https://www.gnu.org/software
 
 - Pasiekiami port'ai: `443`, `80`.
 - Diegimui prisijungimas per ssh: portas `22`
-- Domainas
+- Domenas
 
 ### Vartotojas
 
@@ -53,9 +53,9 @@ Patikrinkite ar visi reikalingi komponentai veikia mašinoje:
     make --version
 ```   
  
-Ar domainas sukonfigūruotas teisingai. Patikriname iš kitos mašinos:
+Ar domenas sukonfigūruotas teisingai. Patikriname iš kitos mašinos:
 ```bash
-    dig <domainas>
+    dig <domain>
 ```
 
 ## Diegimas
