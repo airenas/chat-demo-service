@@ -51,6 +51,11 @@ Patikrinkite ar visi reikalingi komponentai veikia mašinoje:
     docker system info
     ## Kiti komponentai
     make --version
+```   
+ 
+Ar domainas sukonfigūruotas teisingai. Patikriname iš kitos mašinos:
+```bash
+    dig <domainas>
 ```
 
 ## Diegimas
