@@ -159,3 +159,5 @@ cython_debug/
 #.idea/
 Makefile.options
 .idea/
+testing/load/node_modules
+testing/simple-load/node_modules
