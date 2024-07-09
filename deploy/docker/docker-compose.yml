@@ -42,6 +42,8 @@ services:
     environment:
       - BASE_PATH=/${AI_CHATBOT_PATH}
       - NEXT_PUBLIC_BASE_PATH=/${AI_CHATBOT_PATH}
+      - WS_URL=wss://${HOST}
+      - BOT_URL=https://${HOST}
     networks:
      - polis   
     labels:
