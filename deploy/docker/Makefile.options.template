@@ -1,0 +1,12 @@
+### dynamic
+host=
+tts_key=
+translate_key=
+bot_url=http://dipolis.vdu.lt:5005
+asr_url=wss://prn509.vdu.lt/client/ws/speech
+letsencrypt_email=
+
+### static
+ai_chatbot_path=ai_chatbot
+tts_url=https://sinteze.intelektika.lt/synthesis.service/prod/synthesize
+traefik_debug_level=INFO

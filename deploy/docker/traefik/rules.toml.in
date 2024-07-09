@@ -1,0 +1,49 @@
+[http]
+  [http.routers]
+    [http.routers.https-redirect]
+      entryPoints = ["web"]
+      middlewares = ["https-redirect"]
+      rule = "HostRegexp(`{host:.+}`)"
+      service = "noop"
+    
+    [http.routers.default-redirect-polis]
+      entryPoints = ["websecure"]
+      rule = "Host(`${host}`) && Path(`/`)"
+      middlewares = ["default-redirect-polis"]
+      tls = true
+      service = "noop"  
+
+    [http.routers.polis-redirect]
+      entryPoints = ["websecure"]
+      middlewares = ["default-redirect-polis"]
+      rule = "Path(`/${ai_chatbot_path}`)"
+      tls = true
+      service = "noop"     
+
+
+  [http.services]
+    # noop service, the URL will be never called
+    [http.services.noop.loadBalancer]
+      [[http.services.noop.loadBalancer.servers]]
+        url = "http://192.168.0.1"     
+
+  [http.middlewares]
+    [http.middlewares.https-redirect.redirectScheme]
+      scheme = "https"
+
+    [http.middlewares.default-redirect-polis.redirectregex]
+      regex = ".*"
+      replacement="/${ai_chatbot_path}/"    
+ 
+
+    [http.middlewares.rate-limit.rateLimit]
+      average = 10
+      burst = 5
+      
+    [http.middlewares.cors-transcription.headers]
+      accesscontrolallowmethods = "GET,OPTIONS,POST,DELETE"
+      accesscontrolalloworigin = "origin-list-or-null"
+      accesscontrolalloworiginlist = "*"
+      accessControlAllowHeaders = "Content-Type, Authorization"
+      accesscontrolmaxage= 100
+      addvaryheader = true 

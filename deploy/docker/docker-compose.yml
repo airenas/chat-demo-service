@@ -1,0 +1,77 @@
+x-logging:
+  &default-logging
+  options:
+    max-size: '20m'
+    max-file: '3'
+  driver: json-file
+
+services:
+
+  proxy:
+    container_name: proxy
+    image: traefik:2.11 
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - ./traefik:/etc/traefik:ro
+    ports:
+      - "80:80" 
+      - "443:443"
+      # - "8080:8080"
+    networks:
+     - polis   
+    restart: unless-stopped
+    # labels:
+    #  - "traefik.enable=true"
+    #  - "traefik.http.routers.traefik.rule=PathPrefix(`/api`) || PathPrefix(`/dashboard`)"
+    #  - "traefik.http.routers.traefik.middlewares=home-ipw"
+    #  - "traefik.http.routers.traefik.entrypoints=web,websecure"
+    #  - "traefik.http.routers.traefik.tls=true"
+    #  - "traefik.http.routers.traefik.tls.certResolver=le-resolver"
+    #  - "traefik.http.routers.traefik.tls.domains[0].main=${HOST}"
+    #  - "traefik.http.routers.traefik.service=api@internal" 
+    #  - "traefik.http.middlewares.home-ipw.ipwhitelist.sourcerange=${HOME_IP}" 
+
+  ai-chatbot:
+    image: airenas/ai-chatbot:${GUI_VERSION}
+    container_name: ai-chatbot
+    logging: *default-logging
+    restart: unless-stopped
+    environment:
+      - BASE_PATH=/${AI_CHATBOT_PATH}
+      - NEXT_PUBLIC_BASE_PATH=/${AI_CHATBOT_PATH}
+    networks:
+     - polis   
+    labels:
+     - "traefik.enable=true"
+     - "traefik.http.routers.ai-chatbot.rule=PathPrefix(`/${AI_CHATBOT_PATH}`)"
+     - "traefik.http.routers.ai-chatbot.entrypoints=web,websecure"
+     - "traefik.http.routers.ai-chatbot.tls=true"
+     - "traefik.http.routers.ai-chatbot.tls.certResolver=le-resolver"
+     - "traefik.http.routers.ai-chatbot.tls.domains[0].main=${HOST}"
+     - "traefik.http.routers.ai-chatbot.service=ai-chatbot"
+     - "traefik.http.services.ai-chatbot.loadbalancer.server.port=3000"
+
+  demo-service:
+    image: airenas/chat-demo-service:${DEMO_SERVICE_VERSION}
+    container_name: demo-service
+    logging: *default-logging
+    restart: unless-stopped
+    command: -m chat_demo.run --tts_key ${TTS_KEY} --tts_url=${TTS_URL} --bot_url=${BOT_URL} --kaldi_url=${ASR_URL} --no-greet_on_connect --no-use_terminal_input --translate_key=${TRANSLATE_KEY}
+    environment:
+     - LOG_LEVEL=debug
+    networks:
+     - polis 
+    labels:
+     - "traefik.enable=true"
+     - "traefik.http.routers.demo-service.rule=PathPrefix(`/{path:(?i)ai-demo-service/}`)"
+     - "traefik.http.routers.demo-service.entrypoints=web,websecure"
+     - "traefik.http.routers.demo-service.tls=true"
+     - "traefik.http.routers.demo-service.tls.certResolver=le-resolver"
+     - "traefik.http.routers.demo-service.tls.domains[0].main=${HOST}"
+     - "traefik.http.services.demo-service.loadbalancer.server.port=8007"     
+
+networks:
+  polis:
