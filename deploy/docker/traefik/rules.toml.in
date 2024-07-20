@@ -42,7 +42,6 @@
       
     [http.middlewares.cors-transcription.headers]
       accesscontrolallowmethods = "GET,OPTIONS,POST,DELETE"
-      accesscontrolalloworigin = "origin-list-or-null"
       accesscontrolalloworiginlist = "*"
       accessControlAllowHeaders = "Content-Type, Authorization"
       accesscontrolmaxage= 100
