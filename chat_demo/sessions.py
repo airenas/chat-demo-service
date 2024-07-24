@@ -125,7 +125,7 @@ class ChatSession:
         return self.__lang
 
     def make_detect_text(self, txt):
-        min_text = 100
+        min_text = 50
         if len(txt) > min_text:
             return txt
         res = txt
