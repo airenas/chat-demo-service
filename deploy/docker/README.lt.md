@@ -87,12 +87,12 @@ Ar domenas sukonfigūruotas teisingai. Patikriname iš kitos mašinos:
 
     | Parametras | Priva-lomas | Paskirtis | Pvz |
     |------------------|-----|-----------------------------------|------------------|
-    | *host* | + | Domenas, kuriuo bus pasiekiama roboto Web sąsaja | chat-test.policija.lt | 
+    | *host* | + | Domenas, kuriuo bus pasiekiama roboto Web sąsaja | chat-test.my-domain.com | 
     | *tts_key* | + | Sintezės sistemos API raktas (pateiks VDU) | |
     | *translate_key* | + | Vertimo sistemos API raktas (pateiks VDU) ||
-    | *bot_url* | + | AI chatboto serviso URL | https://dipolis-chat.policija.lt |
+    | *bot_url* | + | AI chatboto serviso URL | https://my-chat.my-domain.com |
     | *asr_url* | + | Transkripcijos serviso URL (pateiks VDU) | wss://prn509.vdu.lt/client/ws/speech |
-    | *letsencrypt_email* | + | El. paštas sertifikato suteikimui | admin@policija.lt |
+    | *letsencrypt_email* | + | El. paštas sertifikato suteikimui | my@email.com |
 
 1. Instaliuokite
 

@@ -2,25 +2,25 @@
 
 ```mermaid
 graph LR
-    subgraph policija.lt
-        user[User]
+    subgraph system
+        user1[user1]
+        user2[user2]
         waf[WAF]
-        demo[pd-di-chat]
-        dipolis_next(pd-di-robot?)
+        demo[chat-service]
     end
     subgraph VU[VU]
-        tran[Vertimas]
+        tran[1 vertimas]
     end
     subgraph VDU[VDU]
-        tts[Sintezė]
-        asr[Atpažinimas]
-        dipolis[Chat Robotas]
+        tts[2 sintezė]
+        asr[3 atpažinimas]
+        robo[4 chat robotas]
     end
-    user <--> |https| waf
+    user1 <--> |https| waf
+    user2 <--> |https| waf
     waf <--> |https| demo
-    demo --> |https| tts
-    demo --> |https| tran
+    demo <--> |https| tran
+    demo <--> |https| tts
     demo <--> |wss| asr
-    demo <--> |ws| dipolis
-    demo <--> |ws| dipolis_next
+    demo <--> |ws| robo
 ```    

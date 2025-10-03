@@ -117,7 +117,8 @@ def main(param):
                         help="do greet client on connecting")
     parser.add_argument("--use_terminal_input", default=True, action=argparse.BooleanOptionalAction,
                         help="use terminal input")
-    parser.add_argument("--translate_key", nargs='?', default='translate-key', help="VDU translate engine key")
+    parser.add_argument("--translate_key", nargs='?', default='translate-key', help="VMU translate engine key")
+    parser.add_argument("--translate_app", nargs='?', default='translate-app', help="VMU translate engine app name")
     args = parser.parse_args(args=param)
 
     def out_func(d: Data):
@@ -126,7 +127,7 @@ def main(param):
     def in_func(d: Data):
         runner.add_input(d)
 
-    translator = Translator(key=args.translate_key)
+    translator = Translator(key=args.translate_key, app=args.translate_app)
 
     def session_factory(session_id: str):
         logger.info(f"Create session {session_id}")

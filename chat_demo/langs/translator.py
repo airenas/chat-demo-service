@@ -21,9 +21,9 @@ def prepare_key_map():
 
 class Translator:
 
-    def __init__(self, key: str):
+    def __init__(self, key: str, app: str):
         logger.info("Init translator")
-        self.__url = "https://vertimas.vu.lt/ws/service.svc/json/Translate?appID=DiPolis"
+        self.__url = f"https://vertimas.vu.lt/ws/service.svc/json/Translate?appID={app}"
         self.__key = key
         self.__key_map = prepare_key_map()
 

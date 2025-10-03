@@ -61,7 +61,7 @@ services:
     container_name: demo-service
     logging: *default-logging
     restart: unless-stopped
-    command: -m chat_demo.run --tts_key ${TTS_KEY} --tts_url=${TTS_URL} --bot_url=${BOT_URL} --kaldi_url=${ASR_URL} --no-greet_on_connect --no-use_terminal_input --translate_key=${TRANSLATE_KEY}
+    command: -m chat_demo.run --tts_key ${TTS_KEY} --tts_url=${TTS_URL} --bot_url=${BOT_URL} --kaldi_url=${ASR_URL} --no-greet_on_connect --no-use_terminal_input --translate_key=${TRANSLATE_KEY} --translate_app=${TRANSLATE_APP}
     environment:
      - LOG_LEVEL=debug
     networks:

@@ -2,7 +2,7 @@
 host=
 tts_key=
 translate_key=
-bot_url=http://dipolis.vdu.lt:5005
+bot_url=http://chat.vdu.lt:5005
 asr_url=wss://prn509.vdu.lt/client/ws/speech
 letsencrypt_email=
 
